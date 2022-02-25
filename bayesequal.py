@@ -24,9 +24,9 @@ parser.add_argument('-s','--second', help='Description for second counts file', 
 parser.add_argument('-p','--prior', help='Description for prior counts file', default='allreviewwords.out')
 args = vars(parser.parse_args())
 
-counts1 = defaultdict(int,[myswap(line.strip().split(' ')) for line in open(args['first'])])
-counts2 = defaultdict(int,[myswap(line.strip().split(' ')) for line in open(args['second'])])
-prior = defaultdict(int,[myswap(line.strip().split(' ')) for line in open(args['prior'])])
+counts1 = defaultdict(int,[myswap(line.strip().split(' ')) for line in open(args['first'], encoding="UTF8")])
+counts2 = defaultdict(int,[myswap(line.strip().split(' ')) for line in open(args['second'], encoding="UTF8")])
+prior = defaultdict(int,[myswap(line.strip().split(' ')) for line in open(args['prior'], encoding="UTF8")])
 sigmasquared = defaultdict(float)
 sigma = defaultdict(float)
 delta = defaultdict(float)
