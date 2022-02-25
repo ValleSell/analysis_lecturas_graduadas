@@ -22,10 +22,10 @@ def main():
     print("Counting words...")
     for k, v in books.items():
         print(k)
-        all_text.extend(clean_text(v, stem=args.stem, remove_short=True, remove_stopwords=True))
+        all_text.extend(clean_text(v, stem=args.stem, remove_short=True, remove_stopwords=False))
 
     counts = Counter(all_text).most_common()
-    with open(args.output, "w") as f:
+    with open(args.output, "w", encoding="UTF8") as f:
         for w, c in counts:
             f.write("%s\t%d\n" % (w, c))
 
