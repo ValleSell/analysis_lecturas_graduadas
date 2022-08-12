@@ -6,7 +6,7 @@ import argparse
 
 # Dan Jurafsky March 22 2013
 # bayes.py
-# Computes the "weighted log-odds-ratio, informative dirichlet prior" algorithm for 
+# Computes the "weighted log-odds-ratio, informative dirichlet prior" algorithm
 # from page 388 of 
 # Monroe, Colaresi, and Quinn. 2009. "Fightin' Words: Lexical Feature Selection and Evaluation for Identifying the Content of Political Conflict"
 

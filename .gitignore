@@ -92,6 +92,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+results/
 
 # Spyder project settings
 .spyderproject
@@ -105,3 +106,6 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Unnötiges und Experimente
+crea_lista_woman_terms_ES_with_MCR.py
