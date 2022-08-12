@@ -1,10 +1,10 @@
-# adaptación de get_descriptors.py de Dora Demszky y Lui Lucy
-# identifica verbos y adjetivos que se utilizan con las palabras incluídas en diferentes grupos previamente definidos
+# adaptation from get_descriptors.py from Dora Demszky and Lui Lucy
+# it identifies verbs and adjectives used with all terms included in the two defined groups (male and female)
 
 import argparse
 from helpers import *
-import spacy
-nlp = spacy.load("es_core_news_md")
+import spacy_stanza
+nlp = spacy_stanza.load_pipeline("es")
 
 import os
 import math
@@ -13,26 +13,27 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument('--input_dir', required=True)
 parser.add_argument('--output_dir', required=True)
-parser.add_argument('--people_terms', required=True)
+parser.add_argument('--gender_terms', required=True)
 
 args = parser.parse_args()
 
-nombres_signif=["cándido", "vega", "vera", "victoria", "diana", "jacinto", "modesto", "león", "nacho", "iria", "urbano", "ángel", "clemente", "estrella", "magdalena", "lucía", "flora", "escarlata", "luz", "gracia", "paz", "gloria", "felicidad", "mia", "marina", "dolores", "concepción", "estela", "alma", "bonita", "rosa", "azucena", "consuelo", "pilar", "urraca"]
+nombres_signif=["cándido", "vega", "vera", "victoria", "diana", "jacinto", "modesto", "león", "nacho", "iria", "urbano", "ángel", "clemente", "estrella", "magdalena", "augurio", "lucía", "flora", "escarlata", "luz", "gracia", "paz", "gloria", "felicidad", "mia", "marina", "dolores", "concepción", "estela", "alma", "bonita", "rosa", "azucena", "consuelo", "pilar", "urraca"]
 
 def run_depparse(possible_marks, word2dem,
                  book_lines, title, nlp):
     '''
-    Devuelve un listado de verbos y adjetivos asociados con palabras para referirse a hombres y mujeres.
+    Get adjectives and verbs used with words included in the two defined groups (male and female).
     @inputs:
-    - possible_marks: como "chica"
-    - word2dem: diccionario que asocia p.ej. "chica" a la categoría "mujeres"
-    - book_lines: líneas de texto de los libros
-    - title: título del libro
-    - outfile: archivo en el que se escriben los resultados
-    - nlp: pipeline de spacy, en este caso modelo tamaño intermedio de español
+    - possible_marks: like "chica"
+    - word2dem: word to demographic category, associates "chica" to "women"
+    - book_lines: strings of textbook content in a list
+    - title: title of graded reader
+    - outfile: opened file
+    - nlp: stanza from Stanford University pipeline
+
     '''
     print("Running dependency parsing for", title)
-    # Break up every textbook into 5k line chunks to avoid spaCy's text length limit
+    # Break up every textbook into 5k line chunks to avoid spaCy's text length limit, maybe unnecessary with stanza...
     j = 0
     k = 0
     num_lines = len(book_lines)
@@ -67,15 +68,15 @@ def run_depparse(possible_marks, word2dem,
                     else:
                         dem = word2dem[word]
                 if word not in possible_marks:
-                    # mira la palabra anterior
+                    # check previous word
                     if prev_word in possible_marks and prev_word_pos == "DET":
                         # dem_dict[word2dem[word]] += 1
                         dem = word2dem[prev_word]
-                        # comprobar si palabra ant es adj. terminado en -a, ej. "famosa detective"
+                        # check if previous word  is an adjective ended in -a, e.g. "famosa detective"
                     elif prev_word_pos == "ADJ":
                         if prev_word[-1] == "a" or prev_word[-2:] == "as":
                             dem = word2dem["mujer"]
-                        # comprobar si termina en -o o en -os
+                        # check if it ends in -o or -os
                         elif prev_word[-1] == "o" or prev_word[-2:] == "os":
                             dem = word2dem["hombre"]
 
@@ -83,7 +84,7 @@ def run_depparse(possible_marks, word2dem,
                 if token.dep_ == 'nsubj' and (token.head.pos_ == 'VERB' or token.head.pos_ == 'ADJ'):
                     res.append((str(j), title, word, dem, target_lemma, token.head.pos_, token.dep_))
 
-                #importante: no reconoce las frases en pasiva en español correctamente
+                #important: it does NOT correctly work with Spanish passive voice!
                 if token.dep_ == 'nsubjpass' and token.head.pos_ == 'VERB':
                     res.append((str(j), title, word, dem, target_lemma, token.head.pos_, token.dep_))
                     if prev_word in possible_marks and word in possible_marks:
@@ -138,13 +139,13 @@ def run_depparse(possible_marks, word2dem,
     return res
 
 def main():
-    possible_marks, not_marks = split_terms_into_sets(args.people_terms)
-    word2dem = get_word_to_category(args.people_terms)
+    possible_marks, not_marks = split_terms_into_sets(args.gender_terms)
+    word2dem = get_word_to_category(args.gender_terms)
 
-    # load spacy
-    nlp = spacy.load("es_core_news_md")
+    # load stanza
+    nlp = spacy_stanza.load_pipeline("es")
     books = get_book_txts(args.input_dir, splitlines=True)
-    outfile = codecs.open(os.path.join(args.output_dir, 'descripc_modif.csv'), 'w', encoding='utf-8')
+    outfile = codecs.open(os.path.join(args.output_dir, 'descripc_stanza_wo_lo_new.csv'), 'w', encoding='utf-8')
     for title, textbook_lines in books.items():
         res = run_depparse(possible_marks, word2dem,
             textbook_lines, title, nlp)
