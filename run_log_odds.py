@@ -21,23 +21,29 @@ args = parser.parse_args()
 group1 = args.group1.split(',')
 group2 = args.group2.split(',')
 
+
+#ellas= 'group1_counts_try.txt'
+#ellos= 'group2_counts_try.txt'
+#total= 'all_counts_try.txt'
+#log='log_odds_try.txt'
+
 #ellas= 'group1_counts.txt'
 #ellos= 'group2_counts.txt'
 #total= 'all_counts.txt'
 #log='log_odds.txt'
 
-ellas= 'group1_counts_antiguas.txt'
-ellos= 'group2_counts_antiguas.txt'
-total= 'all_counts_antiguas.txt'
-log='log_odds_antiguas.txt'
+#ellas= 'group1_counts_old_20.txt'
+#ellos= 'group2_counts_old_20.txt'
+#total= 'all_counts_old_20.txt'
+#log='log_odds_old_20.txt'
 
-#ellas= 'group1_counts_nuevas.txt'
-#ellos= 'group2_counts_nuevas.txt'
-#total= 'all_counts_nuevas.txt'
-#log='log_odds_nuevas.txt'
+ellas= 'group1_counts_new_20.txt'
+ellos= 'group2_counts_new_20.txt'
+total= 'all_counts_new_20.txt'
+log='log_odds_new_20.txt'
 
 def write_out_log_odds():
-    translator = str.maketrans('', '', string.punctuation)
+#    translator = str.maketrans('', '', string.punctuation)
     marked = set() # word IDs associated with group 1
     all_count = Counter() # {(id, word) : count}
     group1_count = Counter()
@@ -45,31 +51,48 @@ def write_out_log_odds():
     with open(args.input_file, 'r', encoding="UTF8") as infile:
         for line in infile:
             contents = line.strip().split(',')
-            word = contents[4]
-            proc_word = word.translate(translator)
-            if proc_word == '': continue
+            if contents[-2]=="VERB":
+            #If the word is a verb, dependency information will be added. The aim is to differenciate wether a substantive
+            # is the subject or the object of a verb, like in "Tom (sub) pushes Martin (obj)".
+                word = contents[4] + "_" + contents[-1]
+            else:
+                word = contents[4]
+#            proc_word = word.translate(translator)
+#            if proc_word == '': continue
+            if word == '': continue
             if contents[3] in group1: 
-                group1_count[proc_word] += 1
+#                group1_count[proc_word] += 1
+                group1_count[word] += 1
                 marked.add(contents[0] + contents[1])
     # we open the file twice to avoid overlap w/ group 1
     with open(args.input_file, 'r', encoding="UTF8") as infile:
         for line in infile:
             contents = line.strip().split(',')
-            word = contents[4]
-            proc_word = word.translate(translator)
-            if proc_word == '': continue
-            if contents[3] in group2 and (contents[0] + contents[1]) not in marked: 
+            if contents[-2] == "VERB":
+                word = contents[4] + "_" + contents[-1]
+            else:
+                word = contents[4]
+#            proc_word = word.translate(translator)
+#            if proc_word == '': continue
+            if word == "": continue
+            if contents[3] in group2 and (contents[0] + contents[1]) not in marked:
                 group2_count[word] += 1
             all_count[word] += 1
 
     with open(os.path.join(args.output_dir, ellas), 'w', encoding="UTF8") as outfile:
-        for word in all_count: 
+        for word in all_count:
+            if all_count[word] <20:
+                continue
             outfile.write(str(group1_count[word]) + ' ' + word + '\n')
     with open(os.path.join(args.output_dir, ellos), 'w', encoding="UTF8") as outfile:
-        for word in all_count: 
+        for word in all_count:
+            if all_count[word] <20:
+                continue
             outfile.write(str(group2_count[word]) + ' ' + word + '\n')
     with open(os.path.join(args.output_dir, total), 'w', encoding="UTF8") as outfile:
-        for word in all_count: 
+        for word in all_count:
+            if all_count[word] <20:
+                continue
             outfile.write(str(all_count[word]) + ' ' + word + '\n')
 
 def descriptor_log_odds(): 
